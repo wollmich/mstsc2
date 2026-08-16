@@ -2,6 +2,8 @@
 
 using System;
 using System.Diagnostics;
+using System.Reflection;
+using EasyHook;
 
 namespace mstsc2
 {
@@ -20,6 +22,12 @@ namespace mstsc2
             Process mstsc = Process.Start(psi);
 
             Console.WriteLine("Started MSTSC PID "  + mstsc.Id);
+
+            RemoteHooking.Inject(
+                mstsc.Id,
+                InjectionOptions.Default,
+                @"mstsc2inject.dll",
+                @"mstsc2inject.dll");
         }
     }
 }
