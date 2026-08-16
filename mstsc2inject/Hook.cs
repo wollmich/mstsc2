@@ -10,13 +10,18 @@ namespace mstsc2
     public class HookEntryPoint : IEntryPoint
     {
         public HookEntryPoint(
-            RemoteHooking.IContext context)
+            RemoteHooking.IContext context,
+            uint dpi)
         {
+            UserDpi = dpi;
         }
 
         public void Run(
-            RemoteHooking.IContext context)
+            RemoteHooking.IContext context,
+            uint dpi)
         {
+            UserDpi = dpi;
+
             var hookGetDpiForMonitor = LocalHook.Create(
                 LocalHook.GetProcAddress(
                     "shcore.dll",
@@ -33,6 +38,8 @@ namespace mstsc2
             }
         }
 
+        static uint UserDpi = 96;
+
         [UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
         delegate int GetDpiForMonitorDelegate(IntPtr hMonitor, int dpiType, out uint dpiX, out uint dpiY);
 
@@ -44,7 +51,9 @@ namespace mstsc2
         static int GetDpiForMonitorHook(IntPtr hMonitor, int dpiType, out uint dpiX, out uint dpiY)
         {
             int hr = GetDpiForMonitor(hMonitor, dpiType, out dpiX, out dpiY);
-            System.Windows.Forms.MessageBox.Show("DPI: " + dpiX);
+            //System.Windows.Forms.MessageBox.Show("Monitor DPI: " + dpiX + ", User DPI: " + UserDpi);
+            dpiX = UserDpi;
+            dpiY = UserDpi;
             return hr;
         }
     }

@@ -1,8 +1,9 @@
 ﻿// Michael Wollensack 16.08.2026
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
+using System.Threading;
 using EasyHook;
 
 namespace mstsc2
@@ -11,7 +12,22 @@ namespace mstsc2
     {
         static void Main(string[] args)
         {
-            string arguments = string.Join(" ", args);
+            uint dpi = 96;
+
+            List<string> remaingArgs = new List<string>();
+            foreach (string arg in args)
+            {
+                if (arg.StartsWith("/dpi:", StringComparison.OrdinalIgnoreCase))
+                {
+                    dpi = uint.Parse(arg.Substring(5));
+                }
+                else
+                {
+                    remaingArgs.Add(arg);
+                }
+            }
+            
+            string arguments = string.Join(" ", remaingArgs);
 
             var psi = new ProcessStartInfo
             {
@@ -20,6 +36,7 @@ namespace mstsc2
             };
 
             Process mstsc = Process.Start(psi);
+            mstsc.WaitForInputIdle();
 
             Console.WriteLine("Started MSTSC PID "  + mstsc.Id);
 
@@ -27,7 +44,10 @@ namespace mstsc2
                 mstsc.Id,
                 InjectionOptions.Default,
                 @"mstsc2inject.dll",
-                @"mstsc2inject.dll");
+                @"mstsc2inject.dll",
+                dpi);
+
+            Console.WriteLine("Inject DPI " + dpi);
         }
     }
 }
