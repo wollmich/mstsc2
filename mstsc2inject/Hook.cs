@@ -17,16 +17,6 @@ namespace mstsc2
         public void Run(
             RemoteHooking.IContext context)
         {
-            var hookGetScaleFactorMonitor = LocalHook.Create(
-                LocalHook.GetProcAddress(
-                    "shcore.dll",
-                    "GetScaleFactorForMonitor"),
-                new GetScaleFactorForMonitorDelegate(
-                    GetScaleFactorForMonitorHook),
-                null);
-
-            hookGetScaleFactorMonitor.ThreadACL.SetExclusiveACL(new int[0]);
-
             var hookGetDpiForMonitor = LocalHook.Create(
                 LocalHook.GetProcAddress(
                     "shcore.dll",
@@ -44,24 +34,10 @@ namespace mstsc2
         }
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
-        delegate int GetScaleFactorForMonitorDelegate(IntPtr hMonitor, out int scaleFactor);
-
-        // shcore!GetScaleFactorForMonitor
-        // https://learn.microsoft.com/en-us/windows/win32/api/shellscalingapi/nf-shellscalingapi-getscalefactorformonitor
-        [DllImport("shcore.dll", SetLastError = true)]
-        static extern int GetScaleFactorForMonitor(IntPtr hMonitor, out int scaleFactor);
-
-        static int GetScaleFactorForMonitorHook(IntPtr hMonitor, out int scaleFactor)
-        {
-            int hr = GetScaleFactorForMonitor(hMonitor, out scaleFactor);
-            System.Windows.Forms.MessageBox.Show("Scale Factor: " + scaleFactor);
-            return hr;
-        }
-
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
         delegate int GetDpiForMonitorDelegate(IntPtr hMonitor, int dpiType, out uint dpiX, out uint dpiY);
 
+        // shcore!GetDpiForMonitor
+        // https://learn.microsoft.com/en-us/windows/win32/api/shellscalingapi/nf-shellscalingapi-getdpiformonitor
         [DllImport("shcore.dll", SetLastError = true)]
         static extern int GetDpiForMonitor(IntPtr hMonitor, int dpiType, out uint dpiX, out uint dpiY);
 
